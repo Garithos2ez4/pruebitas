@@ -1,0 +1,143 @@
+﻿@model List<pruebitas.Models.TrabajadorViewModel>
+@{
+    ViewData["Title"] = "Trabajadores";
+}
+
+<h2 class="mb-4">Bandeja de Trabajadores</h2>
+
+<!-- Filtro por Sexo -->
+<form method="get" class="mb-3 d-flex gap-2">
+    <select name="sexoFiltro" class="form-select" style="width:200px;" onchange="this.form.submit()">
+        <option value="">-- Todos --</option>
+        <option value="M">Masculino</option>
+        <option value="F">Femenino</option>
+    </select>
+    <button class="btn btn-primary">Buscar</button>
+</form>
+
+<!-- Botón Crear -->
+<button class="btn btn-success mb-3" data-bs-toggle="modal" data-bs-target="#modalCrear">
+    + Nuevo Trabajador
+</button>
+
+<!-- Tabla de Trabajadores -->
+<table class="table table-bordered">
+    <thead class="table-dark">
+        <tr>
+            <th>N° Documento</th>
+            <th>Nombres</th>
+            <th>Sexo</th>
+            <th>Departamento</th>
+            <th>Provincia</th>
+            <th>Distrito</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var t in Model)
+        {
+            var filaClase = t.Sexo == "M" ? "table-primary" : "table-warning";
+            <tr class="@filaClase">
+                <td>@t.NumeroDocumento</td>
+                <td>@t.Nombres</td>
+                <td>@(t.Sexo == "M" ? "Masculino" : "Femenino")</td>
+                <td>@t.NombreDepartamento</td>
+                <td>@t.NombreProvincia</td>
+                <td>@t.NombreDistrito</td>
+                <td>
+                    <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#modalEditar_@t.Id">Editar</button>
+                    <form asp-action="Eliminar" method="post" class="d-inline" onsubmit="return confirm('¿Está seguro de eliminar el registro?');">
+                        <input type="hidden" name="id" value="@t.Id" />
+                        <button class="btn btn-sm btn-danger">Eliminar</button>
+                    </form>
+                </td>
+            </tr>
+
+            <!-- Modal Editar (simplificado sin combos por ahora) -->
+            <div class="modal fade" id="modalEditar_@t.Id" tabindex="-1">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <form asp-action="Editar" method="post">
+                            <div class="modal-header bg-warning text-dark">
+                                <h5 class="modal-title">Editar Trabajador</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <input type="hidden" name="Id" value="@t.Id" />
+                                <input type="text" name="TipoDocumento" class="form-control mb-2" value="@t.TipoDocumento" required />
+                                <input type="text" name="NumeroDocumento" class="form-control mb-2" value="@t.NumeroDocumento" required />
+                                <input type="text" name="Nombres" class="form-control mb-2" value="@t.Nombres" required />
+                                <select name="Sexo" class="form-select mb-2">
+                                    <option value="M" selected="@(t.Sexo == "M" ? "selected" : null)">Masculino</option>
+                                    <option value="F" selected="@(t.Sexo == "F" ? "selected" : null)">Femenino</option>
+                                </select>
+                                <input type="number" name="IdDepartamento" class="form-control mb-2" value="@t.IdDepartamento" />
+                                <input type="number" name="IdProvincia" class="form-control mb-2" value="@t.IdProvincia" />
+                                <input type="number" name="IdDistrito" class="form-control mb-2" value="@t.IdDistrito" />
+                            </div>
+                            <div class="modal-footer">
+                                <button class="btn btn-primary" type="submit">Guardar</button>
+                                <button class="btn btn-secondary" type="button" data-bs-dismiss="modal">Cancelar</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        }
+    </tbody>
+</table>
+
+<!-- Modal Crear -->
+<div class="modal fade" id="modalCrear" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form asp-action="Crear" method="post">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title">Nuevo Trabajador</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="text" name="TipoDocumento" class="form-control mb-2" placeholder="Tipo Documento" required />
+                    <input type="text" name="NumeroDocumento" class="form-control mb-2" placeholder="Número Documento" required />
+                    <input type="text" name="Nombres" class="form-control mb-2" placeholder="Nombres" required />
+                    <select name="Sexo" class="form-select mb-2" required>
+                        <option value="">-- Sexo --</option>
+                        <option value="M">Masculino</option>
+                        <option value="F">Femenino</option>
+                    </select>
+
+                    <!-- Combo de Departamento -->
+                    <select name="IdDepartamento" class="form-select mb-2" required>
+                        <option value="">-- Departamento --</option>
+                        @foreach (var dep in (SelectList)ViewBag.Departamentos)
+                        {
+                            <option value="@dep.Value">@dep.Text</option>
+                        }
+                    </select>
+
+                    <!-- Combo de Provincia -->
+                    <select name="IdProvincia" class="form-select mb-2" required>
+                        <option value="">-- Provincia --</option>
+                        @foreach (var prov in (SelectList)ViewBag.Provincias)
+                        {
+                            <option value="@prov.Value">@prov.Text</option>
+                        }
+                    </select>
+
+                    <!-- Combo de Distrito -->
+                    <select name="IdDistrito" class="form-select mb-2" required>
+                        <option value="">-- Distrito --</option>
+                        @foreach (var dist in (SelectList)ViewBag.Distritos)
+                        {
+                            <option value="@dist.Value">@dist.Text</option>
+                        }
+                    </select>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-primary" type="submit">Registrar</button>
+                    <button class="btn btn-secondary" type="button" data-bs-dismiss="modal">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
