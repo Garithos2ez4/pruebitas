@@ -1,6 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using pruebitas.Models;
-
+using pruebitas.Models;// <--- clave
 
 namespace pruebitas.Data
 {
